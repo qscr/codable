@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:conduit_codable/codable.dart';
+import 'package:conduit_codable/conduit_codable.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -142,6 +142,7 @@ void main() {
       try {
         KeyedArchive.archive(container, allowReferences: true);
         fail('unreachable');
+        // ignore: avoid_catching_errors
       } on ArgumentError catch (e) {
         expect(e.toString(), contains("#/definitions/child"));
       }
@@ -159,6 +160,7 @@ void main() {
       try {
         KeyedArchive.archive(container, allowReferences: true);
         fail('unreachable');
+        // ignore: avoid_catching_errors
       } on ArgumentError catch (e) {
         expect(e.toString(), contains("#/definitions/child"));
       }
@@ -176,6 +178,7 @@ void main() {
       try {
         KeyedArchive.archive(container, allowReferences: true);
         fail('unreachable');
+        // ignore: avoid_catching_errors
       } on ArgumentError catch (e) {
         expect(e.toString(), contains("#/definitions/child"));
       }
@@ -260,7 +263,7 @@ void main() {
       // works, to complete the lifecycle of a document. we are ensuring
       // that no state is accumulated in decoding that impacts encoding
       // and ensure that our data is valid json
-      final washedData = json.decode(json.encode(out));
+      final washedData = json.decode(json.encode(out)) as Map<String, dynamic>;
       final doc = KeyedArchive.unarchive(washedData);
       final decodedContainer = Container._()..decode(doc);
       final reencodedArchive = KeyedArchive.archive(decodedContainer);
@@ -293,16 +296,16 @@ void main() {
   });
 }
 
-Map<String, dynamic>? encode(void encoder(KeyedArchive object)) {
+Map<String, dynamic>? encode(void Function(KeyedArchive object) encoder) {
   final archive = KeyedArchive({});
   encoder(archive);
-  return json.decode(json.encode(archive));
+  return json.decode(json.encode(archive)) as Map<String, dynamic>?;
 }
 
 class Container extends Coding {
-  Container._();
-
   Container(this.root, this.definitions);
+
+  Container._();
 
   Parent? root;
   Map<String, Coding?>? definitions;
@@ -311,7 +314,7 @@ class Container extends Coding {
   void decode(KeyedArchive object) {
     super.decode(object);
 
-    root = object.decodeObject("root", () => Parent._())!;
+    root = object.decodeObject("root", () => Parent._());
     definitions = object.decodeObjectMap("definitions", () => Child._());
   }
 
@@ -323,9 +326,9 @@ class Container extends Coding {
 }
 
 class Parent extends Coding {
-  Parent._();
-
   Parent(this.name, {this.child, this.children, this.childMap, this.things});
+
+  Parent._();
 
   String? name;
   Child? child;
@@ -354,9 +357,9 @@ class Parent extends Coding {
 }
 
 class Child extends Coding {
-  Child._();
-
   Child(this.name, {this.parent});
+
+  Child._();
 
   String? name;
   Parent? parent;

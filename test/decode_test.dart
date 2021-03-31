@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:conduit_codable/codable.dart';
+import 'package:conduit_codable/conduit_codable.dart';
 import 'package:test/test.dart';
 import 'package:conduit_codable/cast.dart' as cast;
 
@@ -8,7 +8,7 @@ void main() {
   group("Primitive decode", () {
     test("Can decode primitive type", () {
       final archive = getJSONArchive({"key": 2});
-      int? val = archive.decode("key");
+      final int? val = archive.decode("key");
       expect(val, 2);
     });
 
@@ -16,7 +16,7 @@ void main() {
       final archive = getJSONArchive({
         "key": [1, "2"]
       });
-      List<dynamic>? l = archive.decode("key");
+      final List<dynamic>? l = archive.decode("key");
       expect(l, [1, "2"]);
     });
 
@@ -24,32 +24,32 @@ void main() {
       final archive = getJSONArchive({
         "key": {"key": "val"}
       });
-      KeyedArchive? d = archive.decode("key");
+      final KeyedArchive? d = archive.decode("key");
       expect(d, {"key": "val"});
     });
 
     test("Can decode URI", () {
       final archive = getJSONArchive({"key": "https://host.com"});
-      Uri? d = archive.decode("key");
+      final Uri? d = archive.decode("key");
       expect(d!.host, "host.com");
     });
 
     test("Can decode DateTime", () {
       final date = DateTime.now();
       final archive = getJSONArchive({"key": date.toIso8601String()});
-      DateTime? d = archive.decode("key");
+      final DateTime? d = archive.decode("key");
       expect(d!.isAtSameMomentAs(date), true);
     });
 
     test("If value is null, return null from decode", () {
       final archive = getJSONArchive({"key": null});
-      int? val = archive.decode("key");
+      final int? val = archive.decode("key");
       expect(val, isNull);
     });
 
     test("If archive does not contain key, return null from decode", () {
       final archive = getJSONArchive({});
-      int? val = archive.decode("key");
+      final int? val = archive.decode("key");
       expect(val, isNull);
     });
   });
@@ -59,8 +59,8 @@ void main() {
       final archive = getJSONArchive({
         "key": {"key": "val"}
       });
-      archive.castValues({"key": cast.Map(cast.String, cast.String)});
-      Map<String, String>? d = archive.decode("key");
+      archive.castValues({"key": const cast.Map(cast.string, cast.string)});
+      final Map<String, String>? d = archive.decode("key");
       expect(d, {"key": "val"});
     });
 
@@ -70,9 +70,9 @@ void main() {
           "key": ["val"]
         }
       });
-      archive
-          .castValues({"key": cast.Map(cast.String, cast.List(cast.String))});
-      Map<String, List<String?>>? d = archive.decode("key");
+      archive.castValues(
+          {"key": const cast.Map(cast.string, cast.List(cast.string))});
+      final Map<String, List<String?>>? d = archive.decode("key");
       expect(d, {
         "key": ["val"]
       });
@@ -84,9 +84,9 @@ void main() {
           "key": [null, null]
         }
       });
-      archive
-          .castValues({"key": cast.Map(cast.String, cast.List(cast.String))});
-      Map<String, List<String?>>? d = archive.decode("key");
+      archive.castValues(
+          {"key": const cast.Map(cast.string, cast.List(cast.string))});
+      final Map<String, List<String?>>? d = archive.decode("key");
       expect(d, {
         "key": [null, null]
       });
@@ -101,10 +101,10 @@ void main() {
         }
       });
       archive.castValues({
-        "key":
-            cast.Map(cast.String, cast.Map(cast.String, cast.List(cast.String)))
+        "key": const cast.Map(
+            cast.string, cast.Map(cast.string, cast.List(cast.string)))
       });
-      Map<String, Map<String, List<String?>>>? d = archive.decode("key");
+      final Map<String, Map<String, List<String?>>>? d = archive.decode("key");
       expect(d, {
         "key": {
           "key": ["val", null]
@@ -118,8 +118,8 @@ void main() {
       final archive = getJSONArchive({
         "key": ["val", null]
       });
-      archive.castValues({"key": cast.List(cast.String)});
-      List<String?>? d = archive.decode("key");
+      archive.castValues({"key": const cast.List(cast.string)});
+      final List<String?>? d = archive.decode("key");
       expect(d, ["val", null]);
     });
 
@@ -132,9 +132,10 @@ void main() {
           null
         ]
       });
-      archive.castValues(
-          {"key": cast.List(cast.Map(cast.String, cast.List(cast.String)))});
-      List<Map<String, List<String?>>?>? d = archive.decode("key");
+      archive.castValues({
+        "key": const cast.List(cast.Map(cast.string, cast.List(cast.string)))
+      });
+      final List<Map<String, List<String?>>?>? d = archive.decode("key");
       expect(d, [
         {
           "key": ["val", null]
@@ -149,7 +150,7 @@ void main() {
       final archive = getJSONArchive({
         "key": {"name": "Bob"}
       });
-      Parent p = archive.decodeObject("key", () => Parent())!;
+      final Parent p = archive.decodeObject("key", () => Parent())!;
       expect(p.name, "Bob");
       expect(p.child, isNull);
       expect(p.children, isNull);
@@ -165,7 +166,10 @@ void main() {
       try {
         archive.decodeObject("key", () => Parent());
         fail('unreachable');
-      } on ArgumentError {}
+        // ignore: avoid_catching_errors
+      } on ArgumentError {
+        // no action required
+      }
     });
 
     test("Can decode list of Coding objects", () {
@@ -176,7 +180,7 @@ void main() {
           {"name": "Sally"}
         ]
       });
-      List<Parent?>? p = archive.decodeObjects("key", () => Parent());
+      final List<Parent?>? p = archive.decodeObjects("key", () => Parent());
       expect(p![0]!.name, "Bob");
       expect(p[1], isNull);
       expect(p[2]!.name, "Sally");
@@ -191,7 +195,10 @@ void main() {
       try {
         archive.decodeObjects("key", () => Parent());
         fail('unreachable');
-      } on ArgumentError {}
+        // ignore: avoid_catching_errors
+      } on ArgumentError {
+        // no op
+      }
     });
 
     test(
@@ -206,7 +213,10 @@ void main() {
       try {
         archive.decodeObjects("key", () => Parent());
         fail('unreachable');
-      } on TypeError {}
+        // ignore: avoid_catching_errors
+      } on TypeError {
+        // no op
+      }
     });
 
     test("Can decode map of Coding objects", () {
@@ -229,7 +239,10 @@ void main() {
       try {
         archive.decodeObjectMap("key", () => Parent());
         fail('unreachable');
-      } on ArgumentError {}
+        // ignore: avoid_catching_errors
+      } on ArgumentError {
+        // no op
+      }
     });
 
     test(
@@ -241,7 +254,10 @@ void main() {
       try {
         archive.decodeObjectMap("key", () => Parent());
         fail('unreachable');
-      } on TypeError {}
+        // ignore: avoid_catching_errors
+      } on TypeError {
+        // no op
+      }
     });
   });
 
@@ -325,6 +341,7 @@ void main() {
           }
         }, allowReferences: true);
         fail("unreachable");
+        // ignore: avoid_catching_errors
       } on ArgumentError catch (e) {
         expect(e.toString(), contains("/child"));
       }
@@ -387,7 +404,8 @@ void main() {
 
 /// Strips type info from data
 KeyedArchive getJSONArchive(dynamic data, {bool allowReferences = false}) {
-  return KeyedArchive.unarchive(json.decode(json.encode(data)),
+  return KeyedArchive.unarchive(
+      json.decode(json.encode(data)) as Map<String, dynamic>,
       allowReferences: allowReferences);
 }
 
@@ -400,7 +418,7 @@ class Parent extends Coding {
 
   @override
   Map<String, cast.Cast<dynamic>> get castMap {
-    return {"things": cast.List(cast.String)};
+    return {"things": const cast.List(cast.string)};
   }
 
   @override

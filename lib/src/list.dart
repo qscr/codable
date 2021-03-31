@@ -27,7 +27,7 @@ class ListArchive extends Object
         }).toList();
 
   @override
-  operator [](int index) => _inner[index];
+  dynamic operator [](int index) => _inner[index];
 
   @override
   int get length => _inner.length;
@@ -54,7 +54,7 @@ class ListArchive extends Object
 
   List<dynamic> toPrimitive() {
     final out = [];
-    _inner.forEach((val) {
+    for (final val in _inner) {
       if (val is KeyedArchive) {
         out.add(val.toPrimitive());
       } else if (val is ListArchive) {
@@ -62,18 +62,18 @@ class ListArchive extends Object
       } else {
         out.add(val);
       }
-    });
+    }
     return out;
   }
 
   @override
   void resolveOrThrow(ReferenceResolver coder) {
-    _inner.forEach((i) {
+    for (final i in _inner) {
       if (i is KeyedArchive) {
         i.resolveOrThrow(coder);
       } else if (i is ListArchive) {
         i.resolveOrThrow(coder);
       }
-    });
+    }
   }
 }
