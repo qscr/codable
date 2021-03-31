@@ -55,8 +55,10 @@ class KeyedArchive extends Object
   ///
   /// If [allowReferences] is true, JSON Schema references in the emitted document will be validated.
   /// Defaults to false.
-  static Map<String?, dynamic> archive(Coding root,
-      {bool allowReferences = false}) {
+  static Map<String?, dynamic> archive(
+    Coding root, {
+    bool allowReferences = false,
+  }) {
     final archive = KeyedArchive({});
     root.encode(archive);
     if (allowReferences) {
@@ -290,7 +292,9 @@ class KeyedArchive extends Object
   /// For each key-value pair of the archived map, [inflate] is invoked and
   /// each value is decoded into the instance of [T].
   Map<String, T?>? decodeObjectMap<T extends Coding>(
-      String key, T Function() inflate) {
+    String key,
+    T Function() inflate,
+  ) {
     final v = _getValue(key);
     if (v == null) {
       return null;
