@@ -238,7 +238,7 @@ class KeyedArchive extends Object with MapMixin<String, dynamic> implements Refe
     }
 
     if (v is List<String?>) {
-      return List.from(v.where((c) => c != null)) as T?;
+      return (List.from(v.where((c) => c != null)) as List<String>) as T?;
     }
 
     return v as T?;
