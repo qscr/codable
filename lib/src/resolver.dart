@@ -1,4 +1,4 @@
-import 'package:conduit_codable/src/keyed_archive.dart';
+import 'package:conduit_codable_fork/src/keyed_archive.dart';
 
 class ReferenceResolver {
   ReferenceResolver(this.document);
@@ -23,8 +23,8 @@ class ReferenceResolver {
   ///}
   /// ```
   KeyedArchive? resolve(Uri ref) {
-    final folded = ref.pathSegments.fold<KeyedArchive?>(document,
-        (KeyedArchive? objectPtr, pathSegment) {
+    final folded =
+        ref.pathSegments.fold<KeyedArchive?>(document, (KeyedArchive? objectPtr, pathSegment) {
       if (objectPtr != null) {
         return objectPtr[pathSegment] as KeyedArchive?;
       } else {

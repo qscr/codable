@@ -1,3 +1,6 @@
+# 1.0.0-b5
+Fix invalid cast List<String?> to List<String>?
+
 # 1.0.0-b4
 Change the archive to expect the key to be non-nullable which should be correct.
 

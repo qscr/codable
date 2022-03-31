@@ -1,8 +1,8 @@
 import 'dart:convert';
 
-import 'package:conduit_codable/conduit_codable.dart';
+import 'package:conduit_codable_fork/cast.dart' as cast;
+import 'package:conduit_codable_fork/conduit_codable.dart';
 import 'package:test/test.dart';
-import 'package:conduit_codable/cast.dart' as cast;
 
 void main() {
   group("Primitive decode", () {
@@ -71,7 +71,8 @@ void main() {
         }
       });
       archive.castValues(
-          {"key": const cast.Map(cast.string, cast.List(cast.string))});
+        {"key": const cast.Map(cast.string, cast.List(cast.string))},
+      );
       final Map<String, List<String?>>? d = archive.decode("key");
       expect(d, {
         "key": ["val"]
@@ -85,7 +86,8 @@ void main() {
         }
       });
       archive.castValues(
-          {"key": const cast.Map(cast.string, cast.List(cast.string))});
+        {"key": const cast.Map(cast.string, cast.List(cast.string))},
+      );
       final Map<String, List<String?>>? d = archive.decode("key");
       expect(d, {
         "key": [null, null]
@@ -102,7 +104,9 @@ void main() {
       });
       archive.castValues({
         "key": const cast.Map(
-            cast.string, cast.Map(cast.string, cast.List(cast.string)))
+          cast.string,
+          cast.Map(cast.string, cast.List(cast.string)),
+        )
       });
       final Map<String, Map<String, List<String?>>>? d = archive.decode("key");
       expect(d, {
@@ -132,9 +136,7 @@ void main() {
           null
         ]
       });
-      archive.castValues({
-        "key": const cast.List(cast.Map(cast.string, cast.List(cast.string)))
-      });
+      archive.castValues({"key": const cast.List(cast.Map(cast.string, cast.List(cast.string)))});
       final List<Map<String, List<String?>>?>? d = archive.decode("key");
       expect(d, [
         {
@@ -186,9 +188,7 @@ void main() {
       expect(p[2]!.name, "Sally");
     });
 
-    test(
-        "If coding object list is paired with non-List, an exception is thrown",
-        () {
+    test("If coding object list is paired with non-List, an exception is thrown", () {
       final archive = getJSONArchive({
         "key": {"name": "Bob"}
       });
@@ -201,9 +201,7 @@ void main() {
       }
     });
 
-    test(
-        "If any element of coding list is not a coding object, an exception is thrown",
-        () {
+    test("If any element of coding list is not a coding object, an exception is thrown", () {
       final archive = getJSONArchive({
         "key": [
           {"name": "Bob"},
@@ -233,8 +231,7 @@ void main() {
       expect(map["2"], isNull);
     });
 
-    test("If coding object map is paired with non-Map, an exception is thrown",
-        () {
+    test("If coding object map is paired with non-Map, an exception is thrown", () {
       final archive = getJSONArchive({"key": []});
       try {
         archive.decodeObjectMap("key", () => Parent());
@@ -245,9 +242,7 @@ void main() {
       }
     });
 
-    test(
-        "If any element of coding map is not a coding object, an exception is thrown",
-        () {
+    test("If any element of coding map is not a coding object, an exception is thrown", () {
       final archive = getJSONArchive({
         "key": {"1": "2"}
       });
@@ -316,13 +311,16 @@ void main() {
 
   group("Coding object references", () {
     test("Parent can contain reference to child in single object decode", () {
-      final archive = getJSONArchive({
-        "child": {"name": "Sally"},
-        "parent": {
-          "name": "Bob",
-          "child": {"\$ref": "#/child"}
-        }
-      }, allowReferences: true);
+      final archive = getJSONArchive(
+        {
+          "child": {"name": "Sally"},
+          "parent": {
+            "name": "Bob",
+            "child": {"\$ref": "#/child"}
+          }
+        },
+        allowReferences: true,
+      );
 
       final p = archive.decodeObject("parent", () => Parent())!;
       expect(p.name, "Bob");
@@ -330,16 +328,17 @@ void main() {
       expect(p.child!.parent, isNull);
     });
 
-    test(
-        "If reference doesn't exist, an error is thrown when creating document",
-        () {
+    test("If reference doesn't exist, an error is thrown when creating document", () {
       try {
-        getJSONArchive({
-          "parent": {
-            "name": "Bob",
-            "child": {"\$ref": "#/child"}
-          }
-        }, allowReferences: true);
+        getJSONArchive(
+          {
+            "parent": {
+              "name": "Bob",
+              "child": {"\$ref": "#/child"}
+            }
+          },
+          allowReferences: true,
+        );
         fail("unreachable");
         // ignore: avoid_catching_errors
       } on ArgumentError catch (e) {
@@ -348,16 +347,19 @@ void main() {
     });
 
     test("Parent can contain reference to child in a list of objects", () {
-      final archive = getJSONArchive({
-        "child": {"name": "Sally"},
-        "parent": {
-          "name": "Bob",
-          "children": [
-            {"\$ref": "#/child"},
-            {"name": "fred"}
-          ]
-        }
-      }, allowReferences: true);
+      final archive = getJSONArchive(
+        {
+          "child": {"name": "Sally"},
+          "parent": {
+            "name": "Bob",
+            "children": [
+              {"\$ref": "#/child"},
+              {"name": "fred"}
+            ]
+          }
+        },
+        allowReferences: true,
+      );
 
       final p = archive.decodeObject("parent", () => Parent())!;
       expect(p.name, "Bob");
@@ -366,19 +368,22 @@ void main() {
     });
 
     test("Cyclical references are resolved", () {
-      final archive = getJSONArchive({
-        "child": {
-          "name": "Sally",
-          "parent": {"\$ref": "#/parent"}
+      final archive = getJSONArchive(
+        {
+          "child": {
+            "name": "Sally",
+            "parent": {"\$ref": "#/parent"}
+          },
+          "parent": {
+            "name": "Bob",
+            "children": [
+              {"\$ref": "#/child"},
+              {"name": "fred"}
+            ]
+          }
         },
-        "parent": {
-          "name": "Bob",
-          "children": [
-            {"\$ref": "#/child"},
-            {"name": "fred"}
-          ]
-        }
-      }, allowReferences: true);
+        allowReferences: true,
+      );
 
       final p = archive.decodeObject("parent", () => Parent())!;
       expect(p.name, "Bob");
@@ -405,8 +410,9 @@ void main() {
 /// Strips type info from data
 KeyedArchive getJSONArchive(dynamic data, {bool allowReferences = false}) {
   return KeyedArchive.unarchive(
-      json.decode(json.encode(data)) as Map<String, dynamic>,
-      allowReferences: allowReferences);
+    json.decode(json.encode(data)) as Map<String, dynamic>,
+    allowReferences: allowReferences,
+  );
 }
 
 class Parent extends Coding {
